@@ -12,14 +12,14 @@ from pygame.locals import (QUIT, KEYDOWN, K_ESCAPE)
 
 if __name__=='__main__':
 
+    RADTODEG = 360/(np.pi*2)
+
     # physics world
-    world = b2.b2World(gravity=(0,-1))
+    world = b2.b2World(gravity=(0,-0.1))
 
     # static objects in the scene that do not move
     # for drawing purposes
     # the drawer should scale these for visualization when drawing
-    static_objects = []
-    dynamic_objects = []
 
     # create a simple line for the seafloor
     floor_x = 0
@@ -37,14 +37,12 @@ if __name__=='__main__':
     # the speed and such
     floor.CreateEdgeFixture(vertices = floor_vertices,
                             density = 0,
-                            friction = 0.5)
+                            friction = 0.1)
 
-    # add the floor to be drawn later
-    static_objects.append(floor)
 
     # auv starting position
-    auv_x = 10
-    auv_y = floor_y + 5
+    auv_x = 5
+    auv_y = floor_y + 10
     auv_l = 3
     auv_h = 1
     # CCW, centered on the rectangle center
@@ -75,17 +73,16 @@ if __name__=='__main__':
                 # not bouncy
                 restitution=0.7))
 
-    dynamic_objects.append(auv)
-
 
     # where the thruster is attached to the auv
     thruster_local_anchor_auv = (0,0)
 
     # a simple triangle
+    thruster_size = 0.5
     auv_thruster_vertices = [
         (0,0),
-        (-1,-1),
-        (-1,1)
+        (-thruster_size,-thruster_size),
+        (-thruster_size,thruster_size)
     ]
 
     auv_thruster = world.CreateDynamicBody(
@@ -93,32 +90,31 @@ if __name__=='__main__':
                     angle=0,
                     fixtures=b2.b2FixtureDef(
                         shape=b2.b2PolygonShape(vertices=auv_thruster_vertices),
-                        #  shape=b2.b2EdgeShape(vertices=auv_thruster_vertices),
                         density=1,
                         friction=0.1,
                         restitution=0))
 
-    dynamic_objects.append(auv_thruster)
-
-    joints =[]
 
     thruster_joint = b2.b2RevoluteJointDef(
                         bodyA=auv,
                         bodyB=auv_thruster,
                         localAnchorA=auv_local_anchor_thruster,
                         localAnchorB=thruster_local_anchor_auv,
-                        enableMotor=False,
+                        enableMotor=True,
                         enableLimit=True,
-                        maxMotorTorque=1
-                        )
+                        maxMotorTorque=10)
+
     # dont let the thruster collide with the auv body
     thruster_joint.collideConnected = False
     # rotate between these angles hopefully
-    thruster_joint.lowerAngle = -np.pi/6
-    thruster_joint.upperAngle = np.pi/6
+    joint_angle_limit = 30 /RADTODEG
+    thruster_joint.lowerAngle = -joint_angle_limit
+    thruster_joint.upperAngle = joint_angle_limit
+
+
+    # create the joint
     auv_thruster.joint = world.CreateJoint(thruster_joint)
 
-    joints.append(thruster_joint)
 
 
     # setup a simple pygame screen
@@ -132,15 +128,48 @@ if __name__=='__main__':
     clock = pg.time.Clock()
 
     running = True
+
+    thrusting = False
+    target_thrust_angle = 0
     while running:
         # Check the event queue
         for event in pg.event.get():
+            print('event:',event)
             if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                 # The user closed the window or pressed escape
                 running = False
 
             if event.type == KEYDOWN and event.key == 273: # UP key
-                auv.ApplyForceToCenter(force=(0,10),wake=True)
+                thrusting = not thrusting
+
+            if event.type == KEYDOWN and event.key == 275: # right key
+                target_thrust_angle += 10*(1/RADTODEG)
+
+            if event.type == KEYDOWN and event.key == 276: # left key
+                target_thrust_angle -= 10*(1/RADTODEG)
+
+            if target_thrust_angle > 0:
+                target_thrust_angle = min(target_thrust_angle,joint_angle_limit)
+            else:
+                target_thrust_angle = max(target_thrust_angle,-joint_angle_limit)
+
+            print('thrust angle:',auv_thruster.angle*RADTODEG)
+            print('target_thrust_angle:',target_thrust_angle*RADTODEG)
+            print('joint motor speed:',thruster_joint.motorSpeed)
+            print('thrusting:',thrusting)
+
+        if auv_thruster.joint.angle > target_thrust_angle + 0.05:
+            auv_thruster.joint.motorSpeed = -1
+        if auv_thruster.joint.angle < target_thrust_angle - 0.05:
+            auv_thruster.joint.motorSpeed = 1
+
+
+        if thrusting:
+            thrust = 20
+            tx = thrust * np.cos(auv_thruster.angle)
+            ty = thrust * np.sin(auv_thruster.angle)
+            auv_thruster.ApplyForceToCenter(force = (tx,ty), wake=True)
+
 
 
         # refresh
@@ -160,9 +189,6 @@ if __name__=='__main__':
             c = body.position*PPM
             c[1] = SCREEN_HEIGHT - c[1]
             pg.draw.circle(screen, (255,0,0,0), (int(c[0]),int(c[1])), 2)
-
-
-
 
 
         # advance sim time
