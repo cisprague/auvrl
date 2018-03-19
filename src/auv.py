@@ -21,7 +21,8 @@ class AUV:
                  h = 1,
                  thruster_size = 0.5,
                  thruster_limit = 30,
-                 ray_length = 10):
+                 ray_length = 10,
+                 normalize_rays=True):
         """
         x,y defines the starting position of the AUV. 0,0 is bottom left.
         l,h length and height of the AUV.
@@ -122,6 +123,9 @@ class AUV:
 
         # helper object for raycasting. Keeps a reference to auv transform in itself
         # together with the rays and world
+        if normalize_rays:
+            # the rays are created already, safe to modify this
+            ray_length = 1
         self._raycaster = Raycaster(self._world.world,
                                     self._prox_rays,
                                     self._auv.transform,
