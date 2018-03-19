@@ -23,7 +23,19 @@ class Controller:
     def update(self, dt):
         """
         return True if the sim should continue otherwise return false.
+
+        # state of the auv:
+        #  x,y = self._auv.get_position()
+        #  vx,vy = self._auv.get_velocity()
+        #  degrees = self._auv.get_heading()
+        #  degrees_thr = self._auv.get_thruster_angle()
+        #  list_of_dists_points = self._auv.get_proximity()
+        #  list_of_things = self._auv.get_collisions()
+        # control of the auv:
+        #  self._auv.set_thrust(amount)
+        #  self._auv.set_thrust_angle(degrees)
         """
+
         for event in pg.event.get():
             et = event.type
             if et == QUIT or (et == KEYDOWN and event.key == K_ESCAPE):

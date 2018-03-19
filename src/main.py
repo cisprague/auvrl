@@ -30,5 +30,7 @@ if __name__=='__main__':
         auv.update(C.TIME_STEP)
         world.update(C.TIME_STEP)
         if viz is not None:
-            viz.update()
+            viz.update(points = auv.last_casted_points, points_connection = auv.get_position())
         clock.tick(C.TARGET_FPS)
+
+    pg.quit()
