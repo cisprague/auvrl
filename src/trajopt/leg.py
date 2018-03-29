@@ -32,9 +32,9 @@ class Leg(object):
             lambda t, fs: self.dynamics.eom_fullstate(
                 fs, self.dynamics.pontryagin(fs, self.alpha, self.bound)
             ),
-            #lambda t, fs: self.dynamics.eom_fullstate_jac(
-            #    fs, self.dynamics.pontryagin(fs, self.alpha, self.bound)
-            #)
+            lambda t, fs: self.dynamics.eom_fullstate_jac(
+                fs, self.dynamics.pontryagin(fs, self.alpha, self.bound)
+            )
         )
 
     def recorder(self, t, fs):
@@ -87,7 +87,7 @@ class Leg(object):
         # reset trajectory records
         self.times = np.empty((1, 0))
         self.states = np.empty((0, self.dynamics.sdim*2))
-        self.actions = np.empty((0, self.dynamics.udim))
+        self.actions = np.empty((0, self.dynamics.adim))
 
         # set integration method
         self.integrator.set_integrator(
@@ -124,7 +124,7 @@ class Leg(object):
 
         return ceq
 
-    def plot_traj(self, ax=None, mark="k.-", quiver=True):
+    def plot_traj(self, ax=None, mark="k.-", quiver=False):
 
         # create new axes if not supplied
         if ax is None:
@@ -135,6 +135,7 @@ class Leg(object):
         ax.plot(*[self.states[:, dim] for dim in [0, 1, 2]], mark)
 
         # show thrust profile if desired
+        """
         if quiver:
 
             # quaternions
@@ -155,6 +156,7 @@ class Leg(object):
                 normalize=True,
                 length=0.5
             )
+        """
 
         return ax
 
@@ -174,13 +176,16 @@ class Leg(object):
 
         return ax
 
-    def plot_actions(self):
+    def plot_actions(self, time=True):
 
         # create subplots
-        f, ax = plt.subplots(self.dynamics.udim, sharex=True)
+        f, ax = plt.subplots(self.dynamics.adim, sharex=True)
 
-        for i in range(self.dynamics.udim):
-            ax[i].plot(self.times, self.actions[:, i], "k.-")
+        for i in range(self.dynamics.adim):
+            if time:
+                ax[i].plot(self.times, self.actions[:, i], "k.-")
+            else:
+                ax[i].plot(self.actions[:, i], "k.-")
 
         return ax
 
@@ -206,7 +211,7 @@ if __name__ == "__main__":
 
 
     print(leg.mismatch(atol=1e-10, rtol=1e-10))
-    
+
     leg.plot_states()
     leg.plot_actions()
     plt.show()
