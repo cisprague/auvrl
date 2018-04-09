@@ -1,14 +1,4 @@
-""" 
-Implementation of DDPG - Deep Deterministic Policy Gradient
 
-Algorithm and hyperparameter details can be found here: 
-    http://arxiv.org/pdf/1509.02971v2.pdf
-
-The algorithm is tested on the Pendulum-v0 OpenAI gym task 
-and developed with tflearn + Tensorflow
-
-Author: Patrick Emami
-"""
 import tensorflow as tf
 import numpy as np
 import gym
@@ -16,6 +6,7 @@ from gym import wrappers
 import tflearn
 import argparse
 import pprint as pp
+import auv_gym_env
 
 from replay_buffer import ReplayBuffer
 
