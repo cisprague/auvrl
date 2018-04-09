@@ -58,7 +58,7 @@ class Environment:
         pos = self.auv.get_position()
         dist = G.euclid_distance(pos, self.target_point)
         heading = self.auv.get_heading()
-        angle = G.directed_angle([1,0], pos)
+        angle = G.directed_angle(pos, [1,0])
         prox = self.auv.get_proximity()
 
         return dist, heading, angle, prox
