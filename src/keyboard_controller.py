@@ -22,7 +22,7 @@ class Controller:
 
     def update(self, dt):
         """
-        return True if the sim should continue otherwise return false.
+        return False if the sim should continue otherwise return True.
 
         # state of the auv:
         #  x,y = self._auv.get_position()
@@ -34,12 +34,14 @@ class Controller:
         # control of the auv:
         #  self._auv.set_thrust(amount)
         #  self._auv.set_thrust_angle(degrees)
+
+
         """
 
         for event in pg.event.get():
             et = event.type
             if et == QUIT or (et == KEYDOWN and event.key == K_ESCAPE):
-                return False
+                return True
 
             # toggle thrusting
             if et == KEYDOWN and event.key == 273: # UP KEY
@@ -63,5 +65,5 @@ class Controller:
         else:
             self._auv.set_thrust(0)
 
-        return True
+        return False
 

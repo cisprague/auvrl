@@ -16,3 +16,11 @@ TIME_STEP = 1.0 / TARGET_FPS
 
 PPM = 20.0  # pixels per meter
 SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 1000
+
+# rewards
+TARGET_REACHED_REWARD = 1000
+COLLISION_REWARD = -100
+
+# how close should the auv be to the target point
+TARGET_AREA = 5
+TARGET_HEIGHT = 0.2
