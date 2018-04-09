@@ -31,11 +31,18 @@ class Environment:
         """
         # for resetting later
         self.args = [world_size, gravity, xinit, yinit, targetx, targety]
-        self.initialize(*self.args)
 
+        self.world = World(world_size,gravity)
+        self.auv = AUV(self.world, xinit,yinit)
+        self.viz = None
+        self.viz = Visualizer(self.world, C.SCREEN_WIDTH, C.SCREEN_HEIGHT, C.PPM)
+        self.cont = Controller(self.auv)
+        self.clock = pg.time.Clock()
 
-    def initialize(self, *args):
-        world_size, gravity, xinit, yinit, targetx, targety = args
+        self.target_point = [targetx, targety]
+
+    def reset(self):
+        world_size, gravity, xinit, yinit, targetx, targety = self.args
 
         self.world = World(world_size,gravity)
         self.auv = AUV(self.world, xinit,yinit)
@@ -47,21 +54,31 @@ class Environment:
         self.target_point = [targetx, targety]
 
 
-    def reset(self):
-        self.initialize(*self.args)
-
-
     def _observe(self):
         pos = self.auv.get_position()
         dist = G.euclid_distance(pos, self.target_point)
+        heading = self.auv.get_heading()
         angle = G.directed_angle([1,0], pos)
         prox = self.auv.get_proximity()
 
-        return dist, angle, prox
+        return dist, heading, angle, prox
 
 
     def _reward(self, obs):
         # TODO reward function
+
+        # initialise reward
+        r = 0
+
+        # normalised distance to target
+        d = obs[0] / self.args[0]
+        print(d)
+        # maximal r=20 for d=0
+        r += 20/math.exp(d)
+
+        return r
+
+
 
         return 0
 
