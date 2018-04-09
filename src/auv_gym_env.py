@@ -29,6 +29,8 @@ class Environment:
         xinit,yinit, starting position of the auv
         targetx, targety, target position for the auv
         """
+        # for resetting later
+        self.args = [world_size, gravity, xinit, yinit, targetx, targety]
 
         self.world = World(world_size,gravity)
         self.auv = AUV(self.world, xinit,yinit)
@@ -38,6 +40,19 @@ class Environment:
         self.clock = pg.time.Clock()
 
         self.target_point = [targetx, targety]
+
+    def reset(self):
+        world_size, gravity, xinit, yinit, targetx, targety = self.args
+
+        self.world = World(world_size,gravity)
+        self.auv = AUV(self.world, xinit,yinit)
+        self.viz = None
+        self.viz = Visualizer(self.world, C.SCREEN_WIDTH, C.SCREEN_HEIGHT, C.PPM)
+        self.cont = Controller(self.auv)
+        self.clock = pg.time.Clock()
+
+        self.target_point = [targetx, targety]
+
 
     def _observe(self):
         pos = self.auv.get_position()
