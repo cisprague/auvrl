@@ -63,8 +63,9 @@ class Environment:
         return dist, angle, prox
 
 
-    def _reward(self):
+    def _reward(self, obs):
         # TODO reward function
+
         return 0
 
     def _done(self):
@@ -93,7 +94,7 @@ class Environment:
         self.clock.tick(C.TARGET_FPS)
 
         obs = self._observe()
-        reward = self._reward()
+        reward = self._reward(obs)
         done = self._done()
         info = {}
 
