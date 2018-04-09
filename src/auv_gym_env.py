@@ -86,5 +86,5 @@ class Environment:
 
     def render(self):
         self.auv.get_proximity()
-        self.viz.update(point=self.auv.last_casted_points,
+        self.viz.update(points=self.auv.last_casted_points,
                         points_connection=self.auv.get_position())
