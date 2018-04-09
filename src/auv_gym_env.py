@@ -74,7 +74,15 @@ class Environment:
         d = obs[0] / self.args[0]
         print(d)
         # maximal r=20 for d=0
-        r += 20/math.exp(d)
+        r += 1/math.exp(d)
+
+		rr = 0
+		for ray in obs[3]:
+			if ray[0] == 1:
+				rr += 1
+			else:
+				rr -= 1/math.exp(ray[0] / self.args[0])
+		r += rr
 
         return r
 
