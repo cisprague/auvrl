@@ -23,8 +23,8 @@ class Problem(object):
         return self.leg.nec
 
     def get_bounds(self):
-        lb = [10] + [-100]*self.leg.dynamics.sdim
-        ub = [100000] + [100]*self.leg.dynamics.sdim
+        lb = [1] + [-100]*self.leg.dynamics.sdim
+        ub = [10000] + [100]*self.leg.dynamics.sdim
         return (lb, ub)
 
     def fitness(self, z):

@@ -3,9 +3,7 @@
 
 from scipy.integrate import ode
 import numpy as np
-from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
-
 
 class Leg(object):
 
@@ -124,39 +122,14 @@ class Leg(object):
 
         return ceq
 
-    def plot_traj(self, ax=None, mark="k.-", quiver=False):
+    def plot_traj(self, ax=None, mark="k.-"):
 
         # create new axes if not supplied
         if ax is None:
-            fig = plt.figure()
-            ax = fig.gca(projection="3d")
+            f, ax = plt.subplots(1)
 
         # plot the positions
-        ax.plot(*[self.states[:, dim] for dim in [0, 1, 2]], mark)
-
-        # show thrust profile if desired
-        """
-        if quiver:
-
-            # quaternions
-            qr, qx, qy, qz = [self.states[:, dim] for dim in [6, 7, 8, 9]]
-
-            # Rene Descartes directions
-            utx = 2 * (np.multiply(qx, qz) - np.multiply(qy, qr))
-            uty = 2 * (np.multiply(qy, qz) - np.multiply(qx, qr))
-            utz = 1 - 2 * (np.square(qx) + np.square(qy))
-
-            # thrust magnitudes
-            utx, uty, utz = [np.multiply(self.actions[:, 0], i) for i in [utx, uty, utz]]
-
-            # plot thrusts
-            ax.quiver(
-                *[self.states[:, dim] for dim in [0, 1, 2]],
-                utx, uty, utz,
-                normalize=True,
-                length=0.5
-            )
-        """
+        ax.plot(*[self.states[:, dim] for dim in [0, 1]], mark)
 
         return ax
 
@@ -212,6 +185,7 @@ if __name__ == "__main__":
 
     print(leg.mismatch(atol=1e-10, rtol=1e-10))
 
+    leg.plot_traj()
     leg.plot_states()
     leg.plot_actions()
     plt.show()

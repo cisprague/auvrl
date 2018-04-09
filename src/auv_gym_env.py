@@ -19,11 +19,12 @@ import pygame as pg
 
 import math
 
-class Envrionment:
+class Environment:
     def __init__(self, world_size, gravity, xinit, yinit, targetx, targety):
         """
         world size in meters, origin at bottom left
-        gravity in N/m
+        gravity in N/m tuple (x, y)
+
 
         xinit,yinit, starting position of the auv
         targetx, targety, target position for the auv
@@ -33,7 +34,7 @@ class Envrionment:
         self.auv = AUV(self.world, xinit,yinit)
         self.viz = None
         self.viz = Visualizer(self.world, C.SCREEN_WIDTH, C.SCREEN_HEIGHT, C.PPM)
-        self.cont = Controller(auv)
+        self.cont = Controller(self.auv)
         self.clock = pg.time.Clock()
 
         self.target_point = [targetx, targety]
@@ -87,5 +88,3 @@ class Envrionment:
         self.auv.get_proximity()
         self.viz.update(point=self.auv.last_casted_points,
                         points_connection=self.auv.get_position())
-
-

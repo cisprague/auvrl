@@ -11,90 +11,18 @@ class Dynamics(object):
     for a thrust vectored rod subject to spherical fluid resistance
     '''
 
-    def __init__(self, g=9.807, T=10, m=10, l=3, rho=1000, cd=0.3, A=1):
+    def __init__(self, g=0, T=20, m=10, l=3):
 
         # parameters
-        self.params = [g, T, m, l, rho, cd, A]
+        self.params = [g, T, m, l]
 
         # state and action/control dimensions
         self.sdim = 6
         self.adim = 3
 
         # control bounds
-        self.ulb = [0, -10]
-        self.uub = [1, 10]
-
-        # define nondimensional units
-        self.L  = 1000
-        self.V  = 100
-        self.A  = self.V**2/self.L
-        self.M  = m
-        self.F  = self.M*self.A
-        self.D  = rho
-        self.SL = self.L**2
-        self.AN = np.pi
-        self.ON = self.V/self.L
-
-    def nondimensionalise(self, state):
-
-        # unpack parameters
-        g, T, m, l, rho, cd, A = self.params
-
-        # nondimensionalise params
-        g   /= self.A
-        T   /= self.F
-        m   /= self.M
-        l   /= self.L
-        rho /= self.D
-        A   /= self.SL
-
-        # pack params
-        self.params = [g, T, m, l, rho, cd, A]
-
-        # unpack state
-        x, y, vx, vy, theta, omega = state
-
-        # nondimensionalise state
-        x     /= self.L
-        y     /= self.L
-        vx    /= self.V
-        vy    /= self.V
-        theta /= self.AN
-        omega /= self.ON
-
-        # pack state
-        return np.array([x, y, vx, vy, theta, omega])
-
-    def dimensionalise(self, state):
-
-        # unpack parameters
-        g, T, m, l, rho, cd, A = self.params
-
-        # nondimensionalise params
-        g   *= self.A
-        T   *= self.F
-        m   *= self.M
-        l   *= self.L
-        rho *= self.D
-        A   *= self.SL
-
-        # pack params
-        self.params = [g, T, m, l, rho, cd, A]
-
-        # unpack state
-        x, y, vx, vy, theta, omega = state
-
-        # nondimensionalise state
-        x     *= self.L
-        y     *= self.L
-        vx    *= self.V
-        vy    *= self.V
-        theta *= self.AN
-        omega *= self.ON
-
-        # pack state
-        return np.array([x, y, vx, vy, theta, omega])
-
+        self.ulb = [0, np.deg2rad(-10)]
+        self.uub = [1, np.deg2rad(10)]
 
     # computes the instantaneous cost
     def lagrangian(self, control, alpha=0):
