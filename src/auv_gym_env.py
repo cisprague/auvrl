@@ -72,7 +72,6 @@ class Environment:
 
         # normalised distance to target
         d = obs[0] / self.args[0]
-        print(d)
         # maximal r=20 for d=0
         r += 1/math.exp(d)
 
@@ -99,7 +98,7 @@ class Environment:
 
         colls = self.auv.get_collisions()
         if colls is not None and len(colls) > 1:
-            done=True
+            done=True20
 
         return done
 
