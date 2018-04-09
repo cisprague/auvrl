@@ -207,14 +207,18 @@ class Raycaster(b2.b2RayCastCallback):
         return fraction
 
 
-    def cast(self):
+    def cast(self, normalize = True):
         casted = []
         for p1,p2 in self._rays:
             tp1 = self._transform*p1
             tp2 = self._transform*p2
             self._world.RayCast(self, tp1, tp2)
             if self._last_frac is not None and self._last_point is not None:
-                casted.append((self._last_frac*self._ray_length, self._last_point))
+                if normalize:
+                    casted.append((self._last_frac, self._last_point))
+                else:
+                    casted.append((self._last_frac*self._ray_length, self._last_point))
+
             else:
                 casted.append((-1, (None,None)))
             self._last_frac = None
