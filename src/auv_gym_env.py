@@ -18,23 +18,28 @@ import config as C
 import pygame as pg
 
 import math
+import random
 
 class Environment:
-    def __init__(self, world_size, gravity, xinit, yinit, targetx, targety):
+    def __init__(self, world_size, gravity, xinit, yinit, targetx, targety, randomx=0, randomy=0)
         """
         world size in meters, origin at bottom left
         gravity in N/m tuple (x, y)
 
-
         xinit,yinit, starting position of the auv
         targetx, targety, target position for the auv
+
+        randomx, randomy, uniform random addition to xinit,yinit between (-random,random)
         """
         # for resetting later
-        self.args = [world_size, gravity, xinit, yinit, targetx, targety]
+        self.args = [world_size, gravity, xinit, yinit, targetx, targety, randomx, randomy]
         self.reset()
 
     def reset(self):
-        world_size, gravity, xinit, yinit, targetx, targety = self.args
+        world_size, gravity, xinit, yinit, targetx, targety, randomx, randomy = self.args
+
+        xinit += (random.random() - 0.5) * randomx
+        yinit += (random.random() - 0.5) * randomy
 
         self.world = World(world_size,gravity)
         self.auv = AUV(self.world, xinit,yinit)
