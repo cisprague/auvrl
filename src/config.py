@@ -11,7 +11,7 @@ import math
 RADTODEG = 360/(math.pi*2)
 
 # update frequency of the screen
-TARGET_FPS = 60
+TARGET_FPS = 500
 TIME_STEP = 1.0 / TARGET_FPS
 
 PPM = 20.0  # pixels per meter
