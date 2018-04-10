@@ -105,6 +105,7 @@ class AUV:
         self._thruster = auv_thruster
         self._auv = auv
         self._thruster_limit = thruster_limit
+        self._thruster_angle_limits = (thruster_joint.lowerAngle, thruster_joint.upperAngle)
         self._world = world
 
         # create rays for the proximity sensor of the AUV
@@ -224,8 +225,3 @@ class Raycaster(b2.b2RayCastCallback):
             self._last_frac = None
             self._last_point = None
         return casted
-
-
-
-
-

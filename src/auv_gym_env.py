@@ -103,7 +103,7 @@ class Environment:
 
         colls = self.auv.get_collisions()
         if colls is not None and len(colls) > 1:
-            done=True20
+            done=True
 
         return done
 
