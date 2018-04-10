@@ -64,30 +64,35 @@ class Environment:
         return dist, heading, angle, prox
 
 
-    def _reward(self, obs):
+    def _reward(self, obs, actions):
         # TODO reward function
 
         # initialise reward
         r = 0
 
+        # reward getting closer to target
         # normalised distance to target
         d = obs[0] / self.args[0]
         # maximal r=20 for d=0
         r += 1/math.exp(d)
 
+        # penalise getting close to obstacles
+        # reward not detecting obstacles
+        # accumulate ray rewards
+        nrays = len(obs[3])
         rr = 0
         for ray in obs[3]:
-            if ray[0] == 1:
+            if ray[0] == -1:
                 rr += 1
             else:
                 rr -= 1/math.exp(ray[0] / self.args[0])
-        r += rr
+        # add average ray award
+        r += rr/nrays
+
+        # penalise normalised thrust power usage (optimal control)
+        r -= (actions[1] / self.auv._thruster_limit)**2
 
         return r
-
-
-
-        return 0
 
     def _done(self):
         done = False
@@ -115,7 +120,7 @@ class Environment:
         self.clock.tick(C.TARGET_FPS)
 
         obs = self._observe()
-        reward = self._reward(obs)
+        reward = self._reward(obs, action)
         done = self._done()
         info = {}
 
