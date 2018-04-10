@@ -32,7 +32,7 @@ class Environment:
         # for resetting later
         self.args = [world_size, gravity, xinit, yinit, targetx, targety]
         self.reset()
-        
+
     def reset(self):
         world_size, gravity, xinit, yinit, targetx, targety = self.args
 
@@ -81,10 +81,6 @@ class Environment:
         rr /= nr
         r += rr
         return r
-
-
-
-        return 0
 
     def _done(self):
         done = False
