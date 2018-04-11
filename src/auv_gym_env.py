@@ -6,10 +6,10 @@
 # Date: 2018-04-09
 
 
-
 from auv_world import World
 from auv import AUV
-from visualizer import Visualizer
+from visualizer import Visuali
+zer
 from keyboard_controller import Controller
 
 from utils import geometry as G
@@ -20,8 +20,9 @@ import pygame as pg
 import math
 import random
 
+
 class Environment:
-    def __init__(self, world_size, gravity, xinit, yinit, targetx, targety, randomx=0, randomy=0)
+    def __init__(self, world_size, gravity, xinit, yinit, targetx, targety, randomx=0, randomy=0):
         """
         world size in meters, origin at bottom left
         gravity in N/m tuple (x, y)
@@ -32,7 +33,8 @@ class Environment:
         randomx, randomy, uniform random addition to xinit,yinit between (-random,random)
         """
         # for resetting later
-        self.args = [world_size, gravity, xinit, yinit, targetx, targety, randomx, randomy]
+        self.args = [world_size, gravity, xinit,
+                     yinit, targetx, targety, randomx, randomy]
         self.reset()
 
     def reset(self):
@@ -41,10 +43,11 @@ class Environment:
         xinit += (random.random() - 0.5) * randomx
         yinit += (random.random() - 0.5) * randomy
 
-        self.world = World(world_size,gravity)
-        self.auv = AUV(self.world, xinit,yinit)
+        self.world = World(world_size, gravity)
+        self.auv = AUV(self.world, xinit, yinit)
         self.viz = None
-        self.viz = Visualizer(self.world, C.SCREEN_WIDTH, C.SCREEN_HEIGHT, C.PPM)
+        self.viz = Visualizer(self.world, C.SCREEN_WIDTH,
+                              C.SCREEN_HEIGHT, C.PPM)
         self.cont = Controller(self.auv)
         self.clock = pg.time.Clock()
 
@@ -52,16 +55,14 @@ class Environment:
 
         return self._observe()
 
-
     def _observe(self):
         pos = self.auv.get_position()
         dist = G.euclid_distance(pos, self.target_point)
         heading = self.auv.get_heading()
-        angle = G.directed_angle([1,0], pos)
+        angle = G.directed_angle([1, 0], pos)
         prox = self.auv.get_proximity()
 
         return dist, heading, angle, prox
-
 
     def _reward(self, obs):
         # TODO reward function
@@ -73,7 +74,7 @@ class Environment:
         # normalised distance to target
         d = obs[0] / self.args[0]
         # maximal r=20 for d=0
-        r += 1/math.exp(d)
+        r += 1 / math.exp(d)
 
         # negatively reward getting closer to obstacle
         nr = len(obs[3])
@@ -82,7 +83,7 @@ class Environment:
             if ray[0] == -1:
                 rr += 1
             else:
-                rr -= 1/math.exp(ray[0] / self.args[0])
+                rr -= 1 / math.exp(ray[0] / self.args[0])
         rr /= nr
         r += rr
         return r
@@ -92,14 +93,13 @@ class Environment:
         pos = self.auv.get_position()
         if math.fabs(pos[0] - self.target_point[0]) < C.TARGET_AREA and\
            math.fabs(pos[1] - self.target_point[1]) < C.TARGET_HEIGHT:
-            done=True
+            done = True
 
         colls = self.auv.get_collisions()
         if colls is not None and len(colls) > 1:
-            done=True
+            done = True
 
         return done
-
 
     def step(self, action):
         """

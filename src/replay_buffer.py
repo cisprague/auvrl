@@ -1,4 +1,4 @@
-""" 
+"""
 Data structure for implementing experience replay
 
 Author: Patrick Emami
@@ -7,11 +7,12 @@ from collections import deque
 import random
 import numpy as np
 
+
 class ReplayBuffer(object):
 
     def __init__(self, buffer_size, random_seed=123):
         """
-        The right side of the deque contains the most recent experiences 
+        The right side of the deque contains the most recent experiences
         """
         self.buffer_size = buffer_size
         self.count = 0
@@ -20,7 +21,7 @@ class ReplayBuffer(object):
 
     def add(self, s, a, r, t, s2):
         experience = (s, a, r, t, s2)
-        if self.count < self.buffer_size: 
+        if self.count < self.buffer_size:
             self.buffer.append(experience)
             self.count += 1
         else:
@@ -49,5 +50,3 @@ class ReplayBuffer(object):
     def clear(self):
         self.buffer.clear()
         self.count = 0
-
-

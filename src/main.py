@@ -13,8 +13,8 @@ from keyboard_controller import Controller
 import config as C
 import pygame as pg
 
-if __name__=='__main__':
-    world = World(world_size = 50, gravity = 0)
+if __name__ == '__main__':
+    world = World(world_size=50, gravity=0)
     auv = AUV(world, x=25, y=5)
 
     viz = None
@@ -32,7 +32,8 @@ if __name__=='__main__':
         auv.get_proximity()
         world.update(C.TIME_STEP)
         if viz is not None:
-            viz.update(points = auv.last_casted_points, points_connection = auv.get_position())
+            viz.update(points=auv.last_casted_points,
+                       points_connection=auv.get_position())
         clock.tick(C.TARGET_FPS)
 
     pg.quit()

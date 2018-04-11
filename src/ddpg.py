@@ -14,6 +14,7 @@ from replay_buffer import ReplayBuffer
 #   Actor and Critic DNNs
 # ===========================
 
+
 class ActorNetwork(object):
     """
     Input to the network is the state, output is the action
@@ -56,7 +57,8 @@ class ActorNetwork(object):
         # Combine the gradients here
         self.unnormalized_actor_gradients = tf.gradients(
             self.scaled_out, self.network_params, -self.action_gradient)
-        self.actor_gradients = list(map(lambda x: tf.div(x, self.batch_size), self.unnormalized_actor_gradients))
+        self.actor_gradients = list(map(lambda x: tf.div(
+            x, self.batch_size), self.unnormalized_actor_gradients))
 
         # Optimization Op
         self.optimize = tf.train.AdamOptimizer(self.learning_rate).\
@@ -127,13 +129,14 @@ class CriticNetwork(object):
         # Target Network
         self.target_inputs, self.target_action, self.target_out = self.create_critic_network()
 
-        self.target_network_params = tf.trainable_variables()[(len(self.network_params) + num_actor_vars):]
+        self.target_network_params = tf.trainable_variables(
+        )[(len(self.network_params) + num_actor_vars):]
 
         # Op for periodically updating target network with online network
         # weights with regularization
         self.update_target_network_params = \
-            [self.target_network_params[i].assign(tf.multiply(self.network_params[i], self.tau) \
-            + tf.multiply(self.target_network_params[i], 1. - self.tau))
+            [self.target_network_params[i].assign(tf.multiply(self.network_params[i], self.tau)
+                                                  + tf.multiply(self.target_network_params[i], 1. - self.tau))
                 for i in range(len(self.target_network_params))]
 
         # Network target (y_i)
@@ -202,6 +205,8 @@ class CriticNetwork(object):
 
 # Taken from https://github.com/openai/baselines/blob/master/baselines/ddpg/noise.py, which is
 # based on http://math.stackexchange.com/questions/1287634/implementing-ornstein-uhlenbeck-in-matlab
+
+
 class OrnsteinUhlenbeckActionNoise:
     def __init__(self, mu, sigma=0.3, theta=.15, dt=1e-2, x0=None):
         self.theta = theta
@@ -213,12 +218,14 @@ class OrnsteinUhlenbeckActionNoise:
 
     def __call__(self):
         x = self.x_prev + self.theta * (self.mu - self.x_prev) * self.dt + \
-                self.sigma * np.sqrt(self.dt) * np.random.normal(size=self.mu.shape)
+            self.sigma * np.sqrt(self.dt) * \
+            np.random.normal(size=self.mu.shape)
         self.x_prev = x
         return x
 
     def reset(self):
-        self.x_prev = self.x0 if self.x0 is not None else np.zeros_like(self.mu)
+        self.x_prev = self.x0 if self.x0 is not None else np.zeros_like(
+            self.mu)
 
     def __repr__(self):
         return 'OrnsteinUhlenbeckActionNoise(mu={}, sigma={})'.format(self.mu, self.sigma)
@@ -226,6 +233,7 @@ class OrnsteinUhlenbeckActionNoise:
 # ===========================
 #   Tensorflow Summary Ops
 # ===========================
+
 
 def build_summaries():
     episode_reward = tf.Variable(0.)
@@ -242,6 +250,7 @@ def build_summaries():
 #   Agent Training
 # ===========================
 
+
 def train(sess, env, args, actor, critic, actor_noise):
 
     # Set up summary Ops
@@ -255,13 +264,14 @@ def train(sess, env, args, actor, critic, actor_noise):
     critic.update_target_network()
 
     # Initialize replay memory
-    replay_buffer = ReplayBuffer(int(args['buffer_size']), int(args['random_seed']))
+    replay_buffer = ReplayBuffer(
+        int(args['buffer_size']), int(args['random_seed']))
 
-    # Needed to enable BatchNorm. 
+    # Needed to enable BatchNorm.
     # This hurts the performance on Pendulum but could be useful
     # in other environments.
     # tflearn.is_training(True)
-    
+
     for i in range(int(args['max_episodes'])):
 
         s = env.reset()
@@ -328,20 +338,20 @@ def train(sess, env, args, actor, critic, actor_noise):
                 writer.add_summary(summary_str, i)
                 writer.flush()
 
-                print('| Reward: {:d} | Episode: {:d} | Qmax: {:.4f}'.format(int(ep_reward), \
-                        i, (ep_ave_max_q / float(j))))
+                print('| Reward: {:d} | Episode: {:d} | Qmax: {:.4f}'.format(int(ep_reward),
+                                                                             i, (ep_ave_max_q / float(j))))
                 break
+
 
 def main(args):
 
     with tf.Session() as sess:
 
         env = gym.make(args['env'])
-        print("env:",env)
+        print("env:", env)
         np.random.seed(int(args['random_seed']))
         tf.set_random_seed(int(args['random_seed']))
         env.seed(int(args['random_seed']))
-		
 
         state_dim = env.observation_space.shape[0]
         action_dim = env.action_space.shape[0]
@@ -349,7 +359,7 @@ def main(args):
         print(state_dim)
         print(action_dim)
         print(action_bound)
-        print(env.action_space.low)        
+        print(env.action_space.low)
         # Ensure action bound is symmetric
         assert (env.action_space.high.all() == (-env.action_space.low).all())
 
@@ -361,7 +371,7 @@ def main(args):
                                float(args['critic_lr']), float(args['tau']),
                                float(args['gamma']),
                                actor.get_num_trainable_vars())
-        
+
         actor_noise = OrnsteinUhlenbeckActionNoise(mu=np.zeros(action_dim))
 
         if args['use_gym_monitor']:
@@ -376,32 +386,48 @@ def main(args):
         if args['use_gym_monitor']:
             env.monitor.close()
 
+
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='provide arguments for DDPG agent')
+    parser = argparse.ArgumentParser(
+        description='provide arguments for DDPG agent')
 
     # agent parameters
-    parser.add_argument('--actor-lr', help='actor network learning rate', default=0.0001)
-    parser.add_argument('--critic-lr', help='critic network learning rate', default=0.001)
-    parser.add_argument('--gamma', help='discount factor for critic updates', default=0.99)
-    parser.add_argument('--tau', help='soft target update parameter', default=0.001)
-    parser.add_argument('--buffer-size', help='max size of the replay buffer', default=1000000)
-    parser.add_argument('--minibatch-size', help='size of minibatch for minibatch-SGD', default=64)
+    parser.add_argument(
+        '--actor-lr', help='actor network learning rate', default=0.0001)
+    parser.add_argument(
+        '--critic-lr', help='critic network learning rate', default=0.001)
+    parser.add_argument(
+        '--gamma', help='discount factor for critic updates', default=0.99)
+    parser.add_argument(
+        '--tau', help='soft target update parameter', default=0.001)
+    parser.add_argument(
+        '--buffer-size', help='max size of the replay buffer', default=1000000)
+    parser.add_argument('--minibatch-size',
+                        help='size of minibatch for minibatch-SGD', default=64)
 
     # run parameters
-    parser.add_argument('--env', help='choose the gym env- tested on {Pendulum-v0}', default='BipedalWalker-v2')
-    parser.add_argument('--random-seed', help='random seed for repeatability', default=1234)
-    parser.add_argument('--max-episodes', help='max num of episodes to do while training', default=50000)
-    parser.add_argument('--max-episode-len', help='max length of 1 episode', default=1000)
-    parser.add_argument('--render-env', help='render the gym env', action='store_true')
-    parser.add_argument('--use-gym-monitor', help='record gym results', action='store_true')
-    parser.add_argument('--monitor-dir', help='directory for storing gym results', default='./results/gym_ddpg')
-    parser.add_argument('--summary-dir', help='directory for storing tensorboard info', default='./results/tf_ddpg')
+    parser.add_argument(
+        '--env', help='choose the gym env- tested on {Pendulum-v0}', default='BipedalWalker-v2')
+    parser.add_argument(
+        '--random-seed', help='random seed for repeatability', default=1234)
+    parser.add_argument(
+        '--max-episodes', help='max num of episodes to do while training', default=50000)
+    parser.add_argument('--max-episode-len',
+                        help='max length of 1 episode', default=1000)
+    parser.add_argument(
+        '--render-env', help='render the gym env', action='store_true')
+    parser.add_argument('--use-gym-monitor',
+                        help='record gym results', action='store_true')
+    parser.add_argument(
+        '--monitor-dir', help='directory for storing gym results', default='./results/gym_ddpg')
+    parser.add_argument(
+        '--summary-dir', help='directory for storing tensorboard info', default='./results/tf_ddpg')
 
     parser.set_defaults(render_env=True)
     parser.set_defaults(use_gym_monitor=True)
-    
+
     args = vars(parser.parse_args())
-    
+
     pp.pprint(args)
 
     main(args)

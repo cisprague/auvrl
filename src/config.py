@@ -8,7 +8,7 @@
 import math
 
 # deg = rad * RADTODEG
-RADTODEG = 360/(math.pi*2)
+RADTODEG = 360 / (math.pi * 2)
 
 # update frequency of the screen
 TARGET_FPS = 500

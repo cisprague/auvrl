@@ -10,6 +10,7 @@ from pygame.locals import (QUIT, KEYDOWN, K_ESCAPE)
 
 import config as C
 
+
 class Controller:
     def __init__(self, auv):
         self._auv = auv
@@ -44,21 +45,23 @@ class Controller:
                 return True
 
             # toggle thrusting
-            if et == KEYDOWN and event.key == 273: # UP KEY
+            if et == KEYDOWN and event.key == 273:  # UP KEY
                 self._thrusting = not self._thrusting
 
-            if et == KEYDOWN and event.key == 275: # RIGHT KEY
+            if et == KEYDOWN and event.key == 275:  # RIGHT KEY
                 self._target_thrust_angle += self._angle_step
                 self._auv.set_thrust_angle(self._target_thrust_angle)
 
-            if et == KEYDOWN and event.key == 276: # LEFT KEY
+            if et == KEYDOWN and event.key == 276:  # LEFT KEY
                 self._target_thrust_angle -= self._angle_step
                 self._auv.set_thrust_angle(self._target_thrust_angle)
 
         if self._target_thrust_angle > 0:
-            self._target_thrust_angle = min(self._auv._thruster_limit, self._target_thrust_angle)
+            self._target_thrust_angle = min(
+                self._auv._thruster_limit, self._target_thrust_angle)
         if self._target_thrust_angle < 0:
-            self._target_thrust_angle = max(-self._auv._thruster_limit, self._target_thrust_angle)
+            self._target_thrust_angle = max(-self._auv._thruster_limit,
+                                            self._target_thrust_angle)
 
         if self._thrusting:
             self._auv.set_thrust(self._thrust)
@@ -66,4 +69,3 @@ class Controller:
             self._auv.set_thrust(0)
 
         return False
-
