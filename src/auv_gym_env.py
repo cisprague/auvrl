@@ -63,28 +63,53 @@ class Environment:
 
         return dist, heading, angle, prox
 
-    def _reward(self, obs):
-        # TODO reward function
+    def _reward(self, obs, action):
 
         # initialise reward
         r = 0
+        # world size
+        D = self.args[0]
 
-        # reward getting closer to target
+        # distance to target
+        d = obs[0]
         # normalised distance to target
-        d = obs[0] / self.args[0]
-        # maximal r=20 for d=0
+        d /= D
+        # reward being closer to target
         r += 1 / math.exp(d)
 
-        # negatively reward getting closer to obstacle
-        nr = len(obs[3])
+        # ray observations
+        rays = obs[3]
+        # number of rays
+        nrays = len(rays)
+        # initialise ray reward
         rr = 0
-        for ray in obs[3]:
-            if ray[0] == -1:
+        # for each sensor array
+        for ray in rays:
+            # ray distance observation
+            d = ray[0]
+            # if ray doesn't sense anything
+            if d == -1:
+                # positive reward, because no obstacles are sensed
                 rr += 1
+            # if ray does sense something
             else:
-                rr -= 1 / math.exp(ray[0] / self.args[0])
-        rr /= nr
+                # normalised distance to obstacle
+                d /= D
+                # negatively reward getting closer to obstacle
+                rr -= 1 / math.exp(d)
+        # average ray rewards
+        rr /= nrays
+        # add ray awards to overall rewards
         r += rr
+
+        # extract actions
+        thrust_angle, thrust_power = action
+        # normalise thruster power
+        thrust_power /= 50
+        # negatively reward using thruster (optimal control)
+        r -= thrust_power**2
+
+        # return overall reward
         return r
 
     def _done(self):
@@ -112,7 +137,7 @@ class Environment:
         self.clock.tick(C.TARGET_FPS)
 
         obs = self._observe()
-        reward = self._reward(obs)
+        reward = self._reward(obs, action)
         done = self._done()
         info = {}
 
