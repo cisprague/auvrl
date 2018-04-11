@@ -21,10 +21,17 @@ import random
 
 
 class Environment:
-    def __init__(self, world_size, gravity, xinit, yinit, targetx, targety, randomx=0, randomy=0):
+    def __init__(self,
+                 world_size, gravity, num_obstacles, obstacle_sizes, obstacle_noise,
+                 xinit, yinit,
+                 targetx, targety,
+                 randomx=0, randomy=0):
         """
         world size in meters, origin at bottom left
         gravity in N/m tuple (x, y)
+        num_obstacles is the number of random obstacles to be added to the world
+        obstacle_sizes is the radius of the obstacles
+        obstacle_noise makes the obstacles non-circular by adding/subtracting a random value < obstacle_noise
 
         xinit,yinit, starting position of the auv
         targetx, targety, target position for the auv
@@ -32,17 +39,19 @@ class Environment:
         randomx, randomy, uniform random addition to xinit,yinit between (-random,random)
         """
         # for resetting later
-        self.args = [world_size, gravity, xinit,
-                     yinit, targetx, targety, randomx, randomy]
+        self.args = [world_size, gravity, num_obstacles, obstacle_sizes, obstacle_noise,\
+                     xinit, yinit,\
+                     targetx, targety,\
+                     randomx, randomy]
         self.reset()
 
     def reset(self):
-        world_size, gravity, xinit, yinit, targetx, targety, randomx, randomy = self.args
+        world_size, gravity, num_obstacles, obstacle_sizes, obstacle_noise, xinit, yinit, targetx, targety, randomx, randomy = self.args
 
         xinit += (random.random() - 0.5) * randomx
         yinit += (random.random() - 0.5) * randomy
 
-        self.world = World(world_size, gravity)
+        self.world = World(world_size, gravity, num_obstacles, obstacle_sizes, obstacle_noise)
         self.auv = AUV(self.world, xinit, yinit)
         self.viz = None
         self.viz = Visualizer(self.world, C.SCREEN_WIDTH,
@@ -147,3 +156,33 @@ class Environment:
         self.auv.get_proximity()
         self.viz.update(points=self.auv.last_casted_points,
                         points_connection=self.auv.get_position())
+
+def make_environment(env_type, world_size, gravity, randomx, randomy):
+    """
+    env_type is one of ['empty','fewlarge','manysmall']
+    """
+
+    if env_type=='empty':
+        num_obstacles = 0
+        obstacle_sizes = 1
+        obstacle_noise = 1
+    if env_type=='fewlarge':
+        num_obstacles = 2
+        obstacle_sizes = 12
+        obstacle_noise = 5
+    if env_type=='manysmall':
+        num_obstacles = 13
+        obstacle_sizes = 2
+        obstacle_noise = 2
+
+    env = Environment(world_size,gravity,num_obstacles,obstacle_sizes,obstacle_noise,
+                      10,world_size-10,
+                      world_size/2,0,
+                      randomx,randomy)
+    return env
+
+if __name__=='__main__':
+    env = make_environment('fewlarge',50,-1,5,5)
+    for i in range(10000):
+        env.step((0,0))
+        env.render()

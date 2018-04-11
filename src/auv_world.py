@@ -5,16 +5,19 @@
 # Author: Ozer Ozkahraman (ozkahramanozer@gmail.com)
 # Date: 2018-03-14
 
-import numpy as np
 import Box2D as b2
-
 import config as C
+import math
+import random
 
 
 class World:
     def __init__(self,
                  world_size=50,
-                 gravity=-1):
+                 gravity=-1,
+                 num_obstacles=3,
+                 obstacle_sizes=3,
+                 obstacle_noise=1):
 
         # physics world
         self.world = b2.b2World(gravity=(0, gravity))
@@ -41,10 +44,22 @@ class World:
                                         density=0,
                                         friction=0)
 
-        obs = self.world.CreateStaticBody(shapes=b2.b2PolygonShape(
-            vertices=[(20, 20), (25, 30), (18, 22), (12, 10)]))
-        obs = self.world.CreateStaticBody(shapes=b2.b2PolygonShape(
-            vertices=[(10, 40), (35, 44), (22, 42), (25, 40)]))
+        for i in range(num_obstacles):
+            pos = [random.randint(0,world_size), random.randint(0,world_size)]
+            verts = _make_random_obstacle(pos, obstacle_sizes, obstacle_noise)
+            obs = self.world.CreateStaticBody(shapes=b2.b2PolygonShape(vertices=verts))
 
     def update(self, dt=1 / 60):
         self.world.Step(dt, 10, 10)
+
+
+def _make_random_obstacle(pos, size=5, size_range=2, num_verts=10):
+    angles = range(0,360,int(360/num_verts))
+    verts = []
+    base_x, base_y = pos
+    for angle in angles:
+        x = math.cos(angle)*(size+random.random()*size_range -size_range/2)
+        y = math.sin(angle)*(size+random.random()*size_range -size_range/2)
+        verts.append((base_x+x,base_y+y))
+    return verts
+
