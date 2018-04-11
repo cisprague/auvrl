@@ -8,8 +8,7 @@
 
 from auv_world import World
 from auv import AUV
-from visualizer import Visuali
-zer
+from visualizer import Visualizer
 from keyboard_controller import Controller
 
 from utils import geometry as G
