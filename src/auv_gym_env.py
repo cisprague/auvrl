@@ -71,8 +71,9 @@ class Environment:
         heading = self.auv.get_heading()
         angle = G.directed_angle([1, 0], pos)
         prox = self.auv.get_proximity()
+        angvel = self.auv.get_angular_velocity()
 
-        return dist, heading, angle, prox
+        return dist, heading, angle, angvel, prox
 
     def _reward(self, obs, action):
 
@@ -86,10 +87,10 @@ class Environment:
         # normalised distance to target
         d /= D
         # reward being closer to target
-        r += 1 / math.exp(d)
+        #r += 1 / math.exp(d)
 
         # ray observations
-        rays = obs[3]
+        rays = obs[-1]
         # number of rays
         nrays = len(rays)
         # initialise ray reward
@@ -111,7 +112,11 @@ class Environment:
         # average ray rewards
         rr /= nrays
         # add ray awards to overall rewards
-        r += rr
+        #r += rr
+
+        # angular velocity
+        w = obs[3]
+        r += 1/math.exp(w)
 
         # extract actions
         thrust_angle, thrust_power = action
@@ -120,10 +125,10 @@ class Environment:
         r -= thrust_power**2
 
         if self.collided == True:
-            r -= 1
+            r -= 10
 
         if self.landed == True:
-            r += 1
+            r += 10
 
         # return overall reward
         return r

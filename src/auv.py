@@ -142,6 +142,9 @@ class AUV:
     def get_velocity(self):
         return self._auv.linearVelocity
 
+    def get_angular_velocity(self):
+        return self._auv.angularVelocity
+
     def get_heading(self):
         return self._auv.angle * C.RADTODEG
 

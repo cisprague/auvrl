@@ -268,9 +268,9 @@ def train(sess, env, args, actor, critic, actor_noise):
     for i in range(int(args['max_episodes'])):
         #print("i",i)
         s_temp = env.reset()
-        s = s_temp[0:3]
-        for tem_con in range(0,len(s_temp[3])):
-            s = np.append(s,s_temp[3][tem_con][0])
+        s = s_temp[0:4]
+        for tem_con in range(0,len(s_temp[4])):
+            s = np.append(s,s_temp[4][tem_con][0])
         ep_reward = 0
         ep_ave_max_q = 0
         current_step += 1
@@ -285,9 +285,9 @@ def train(sess, env, args, actor, critic, actor_noise):
             a = actor.predict(np.reshape(s, (1, actor.s_dim))) + actor_noise()
 
             s_temp2, r, terminal, info = env.step(a[0])
-            s2 = s_temp2[0:3]
-            for tem_con2 in range(0,len(s_temp2[3])):
-                 s2 = np.append(s2,s_temp2[3][tem_con2][0])
+            s2 = s_temp2[0:4]
+            for tem_con2 in range(0,len(s_temp2[4])):
+                 s2 = np.append(s2,s_temp2[4][tem_con2][0])
             replay_buffer.add(np.reshape(s, (actor.s_dim,)), np.reshape(a, (actor.a_dim,)), r,
                               terminal, np.reshape(s2, (actor.s_dim,)))
 
@@ -341,7 +341,7 @@ def train(sess, env, args, actor, critic, actor_noise):
 def main(args):
     with tf.Session() as sess:
 
-        myenv = auv_gym_env.make_environment('empty', 50, -.1, 5, 5)
+        myenv = auv_gym_env.make_environment('manysmall', 50, -.1, 5, 5)
         myenv.render()
         #print (len(myenv._observe()))
         #env = gym.make(args['env'])
@@ -350,7 +350,7 @@ def main(args):
         tf.set_random_seed(int(args['random_seed']))
         #env.seed(int(args['random_seed']))
 
-        state_dim = 11
+        state_dim = 12
         action_dim = 2
         action_bound = [1.0, 1.0]
         #state_dim = env.observation_space.shape[0]
