@@ -17,7 +17,10 @@ class World:
                  gravity=-1,
                  num_obstacles=3,
                  obstacle_sizes=3,
-                 obstacle_noise=1):
+                 obstacle_noise=1,
+                 xinit=None,
+                 yinit=None,
+                 rinit=None):
 
         # physics world
         self.world = b2.b2World(gravity=(0, gravity))
@@ -44,8 +47,34 @@ class World:
                                         density=0,
                                         friction=0)
 
+        # for each obstacle
         for i in range(num_obstacles):
-            pos = [random.randint(0,world_size), random.randint(0,world_size)]
+
+            # if AUV initial zone is given
+            if xinit is not None and yinit is not None and rinit is not None:
+
+                # find a good obstacle position
+                satisfied = False
+                while not satisfied:
+
+                    print("Obstacles not good, making new one.")
+
+                    # compute random obstacle position
+                    x = random.uniform(0, world_size)
+                    y = random.uniform(0, world_size)
+                    print(x, y)
+                    print(xinit, yinit)
+
+                    # Euclidian distance
+                    d = ((x - xinit)**2 + (y - yinit)**2)**0.5
+
+                    # minimum collision free distance
+                    if d <= rinit + obstacle_sizes:
+                        satisfied = False
+                    else:
+                        satisfied = True
+
+            pos = [x, y]
             verts = _make_random_obstacle(pos, obstacle_sizes, obstacle_noise)
             obs = self.world.CreateStaticBody(shapes=b2.b2PolygonShape(vertices=verts))
 
@@ -54,7 +83,7 @@ class World:
 
 
 def _make_random_obstacle(pos, size=5, size_range=2, num_verts=10):
-    angles = range(0,360,int(360/num_verts))
+    angles = range(0,360, int(360/num_verts))
     verts = []
     base_x, base_y = pos
     for angle in angles:

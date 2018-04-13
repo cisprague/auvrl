@@ -157,7 +157,7 @@ class AUV:
         return casted
 
     def get_collisions(self):
-        return self._auv.contacts
+        return self._auv.contacts + self._thruster.contacts
 
     def set_thrust(self, Nm):
         a = self.get_thruster_angle() / C.RADTODEG

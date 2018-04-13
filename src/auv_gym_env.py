@@ -33,10 +33,10 @@ class Environment:
         obstacle_sizes is the radius of the obstacles
         obstacle_noise makes the obstacles non-circular by adding/subtracting a random value < obstacle_noise
 
-        xinit,yinit, starting position of the auv
+        xinit, yinit, starting position of the auv
         targetx, targety, target position for the auv
 
-        randomx, randomy, uniform random addition to xinit,yinit between (-random,random)
+        randomx, randomy, uniform random addition to xinit, yinit between (-random,random)
         """
         # for resetting later
         self.args = [world_size, gravity, num_obstacles, obstacle_sizes, obstacle_noise,\
@@ -51,7 +51,7 @@ class Environment:
         xinit += (random.random() - 0.5) * randomx
         yinit += (random.random() - 0.5) * randomy
 
-        self.world = World(world_size, gravity, num_obstacles, obstacle_sizes, obstacle_noise)
+        self.world = World(world_size, gravity, num_obstacles, obstacle_sizes, obstacle_noise, xinit=xinit, yinit=yinit, rinit=3)
         self.auv = AUV(self.world, xinit, yinit)
         self.viz = None
         self.viz = Visualizer(self.world, C.SCREEN_WIDTH,
@@ -134,7 +134,7 @@ class Environment:
 
         return done
 
-    def step(self, action):
+    def step(self, action, dt=0.1):
         """
         action is a tuple of 'thrust angle' and 'thrust power'
         thrust angle and power commands are both between -1 and 1.
@@ -153,8 +153,12 @@ class Environment:
         # set AUV thrust level
         self.auv.set_thrust(thrust_power)
 
-        self.auv.update(C.TIME_STEP)
-        self.world.update(C.TIME_STEP)
+        if dt is not None:
+            self.auv.update(dt)
+            self.world.update(dt)
+        else:
+            self.auv.update(C.TIME_STEP)
+            self.world.update(C.TIME_STEP)
         #self.clock.tick(C.TARGET_FPS)
 
         obs = self._observe()
