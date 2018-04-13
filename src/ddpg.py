@@ -2,7 +2,7 @@
 import tensorflow as tf
 import numpy as np
 #import gym
-from gym import wrappers
+#from gym import wrappers
 import tflearn
 import argparse
 import pprint as pp
@@ -258,15 +258,15 @@ def train(sess, env, args, actor, critic, actor_noise):
     # Initialize replay memory
     replay_buffer = ReplayBuffer(int(args['buffer_size']), int(args['random_seed']))
 
-    # Needed to enable BatchNorm. 
+    # Needed to enable BatchNorm.
     # This hurts the performance on Pendulum but could be useful
     # in other environments.
     # tflearn.is_training(True)
-    
+
     for i in range(int(args['max_episodes'])):
         print("i",i)
         s_temp = env.reset()
-        s = s_temp[0:3] 
+        s = s_temp[0:3]
         for tem_con in range(0,len(s_temp[3])):
             s = np.append(s,s_temp[3][tem_con][0])
         ep_reward = 0
@@ -283,7 +283,7 @@ def train(sess, env, args, actor, critic, actor_noise):
 
 
             s_temp2, r, terminal, info = env.step(a[0])
-            s2 = s_temp2[0:3] 
+            s2 = s_temp2[0:3]
             for tem_con2 in range(0,len(s_temp2[3])):
                  s2 = np.append(s2,s_temp2[3][tem_con2][0])
             replay_buffer.add(np.reshape(s, (actor.s_dim,)), np.reshape(a, (actor.a_dim,)), r,
@@ -347,7 +347,7 @@ def main(args):
         np.random.seed(int(args['random_seed']))
         tf.set_random_seed(int(args['random_seed']))
         #env.seed(int(args['random_seed']))
-		
+
         state_dim = 11
         action_dim = 2
         action_bound = [1.0, 1.0]
@@ -357,7 +357,7 @@ def main(args):
         #print(state_dim)
         #print(action_dim)
         #print(action_bound)
-        #print(env.action_space.low)        
+        #print(env.action_space.low)
         # Ensure action bound is symmetric
         #assert (env.action_space.high.all() == (-env.action_space.low).all())
 
@@ -369,7 +369,7 @@ def main(args):
                                float(args['critic_lr']), float(args['tau']),
                                float(args['gamma']),
                                actor.get_num_trainable_vars())
-        
+
         actor_noise = OrnsteinUhlenbeckActionNoise(mu=np.zeros(action_dim))
 
         #if args['use_gym_monitor']:
@@ -408,9 +408,9 @@ if __name__ == '__main__':
 
     parser.set_defaults(render_env=True)
     parser.set_defaults(use_gym_monitor=True)
-    
+
     args = vars(parser.parse_args())
-    
+
     pp.pprint(args)
 
     main(args)

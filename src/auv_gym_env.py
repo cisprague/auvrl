@@ -137,10 +137,23 @@ class Environment:
     def step(self, action):
         """
         action is a tuple of 'thrust angle' and 'thrust power'
+        thrust angle and power commands are both between -1 and 1.
         """
+
+        # extract thrust angle and power [-1, 1]
         thrust_angle, thrust_power = action
+        # transform thrust power into [0, 1]
+        thrust_power = (thrust_power + 1)/2
+        # transform nondimensional commands into metric ones
+        thrust_angle *= self.auv._thruster_limit
+        thrust_power *= self.auv._thruster_power_limit
+
+
+        # set AUV thrust angle
         self.auv.set_thrust_angle(thrust_angle)
+        # set AUV thrust level
         self.auv.set_thrust(thrust_power)
+
         self.auv.update(C.TIME_STEP)
         self.world.update(C.TIME_STEP)
         self.clock.tick(C.TARGET_FPS)

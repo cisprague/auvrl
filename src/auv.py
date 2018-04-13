@@ -20,8 +20,9 @@ class AUV:
                  l=3,
                  h=1,
                  thruster_size=0.5,
-                 thruster_limit=30,
-                 ray_length=10):
+                 thruster_limit=50,
+                 ray_length=10,
+                 thruster_power_limit=50):
         """
         x,y defines the starting position of the AUV. 0,0 is bottom left.
         l,h length and height of the AUV.
@@ -102,6 +103,7 @@ class AUV:
         self._thruster_joint = auv_thruster.joint
         self._thruster = auv_thruster
         self._auv = auv
+        self._thruster_power_limit = thruster_power_limit
         self._thruster_limit = thruster_limit
         self._thruster_angle_limits = (
             thruster_joint.lowerAngle, thruster_joint.upperAngle)
@@ -175,6 +177,7 @@ class AUV:
         self._target_thrust_angle = deg
 
     def update(self, dt):
+
         # apply the thrusters force to the whole body
         self._thruster.ApplyForceToCenter(force=self._thrust, wake=True)
 

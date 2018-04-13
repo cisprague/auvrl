@@ -26,7 +26,7 @@ class World:
         # for drawing purposes
         # the drawer should scale these for visualization when drawing
 
-        # creat a box around the working area
+        # create a box around the working area
         # vertices are in physics coords.
         a = 1
         box_vertices = [(a, a), (world_size - a, a),
@@ -62,4 +62,3 @@ def _make_random_obstacle(pos, size=5, size_range=2, num_verts=10):
         y = math.sin(angle)*(size+random.random()*size_range -size_range/2)
         verts.append((base_x+x,base_y+y))
     return verts
-
