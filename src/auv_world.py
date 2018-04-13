@@ -20,7 +20,9 @@ class World:
                  obstacle_noise=1,
                  xinit=None,
                  yinit=None,
-                 rinit=None):
+                 rinit=None,
+                 targetx=None,
+                 targety=None):
 
         # physics world
         self.world = b2.b2World(gravity=(0, gravity))
@@ -50,29 +52,35 @@ class World:
         # for each obstacle
         for i in range(num_obstacles):
 
-            # if AUV initial zone is given
-            if xinit is not None and yinit is not None and rinit is not None:
+            # find a good obstacle position
+            while True:
 
-                # find a good obstacle position
-                satisfied = False
-                while not satisfied:
+                # compute random obstacle position
+                x = random.uniform(0, world_size)
+                y = random.uniform(0, world_size)
 
-                    print("Obstacles not good, making new one.")
+                # Euclidian distance to initial AUV position
+                d = math.sqrt((x - xinit)**2 + (y - yinit)**2)
 
-                    # compute random obstacle position
-                    x = random.uniform(0, world_size)
-                    y = random.uniform(0, world_size)
-                    print(x, y)
-                    print(xinit, yinit)
+                # maximum obstacle radius
+                r = obstacle_sizes + obstacle_noise - obstacle_noise/2
 
-                    # Euclidian distance
-                    d = ((x - xinit)**2 + (y - yinit)**2)**0.5
+                # minimum collision free distance
+                if d > rinit + r:
+                    pass
+                else:
+                    print("Obstacle conflicts with initialisation.")
+                    continue
 
-                    # minimum collision free distance
-                    if d <= rinit + obstacle_sizes:
-                        satisfied = False
-                    else:
-                        satisfied = True
+                # Euclidian distance to target position
+                d = math.sqrt((x - targetx)**2 + (y - targety)**2)
+
+                # minimum confliction free distance
+                if d > r + C.TARGET_AREA:
+                    break
+                else:
+                    print("Obstacle conflicts with target.")
+                    continue
 
             pos = [x, y]
             verts = _make_random_obstacle(pos, obstacle_sizes, obstacle_noise)

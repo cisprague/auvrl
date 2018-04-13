@@ -51,7 +51,7 @@ class Environment:
         xinit += (random.random() - 0.5) * randomx
         yinit += (random.random() - 0.5) * randomy
 
-        self.world = World(world_size, gravity, num_obstacles, obstacle_sizes, obstacle_noise, xinit=xinit, yinit=yinit, rinit=3)
+        self.world = World(world_size, gravity, num_obstacles, obstacle_sizes, obstacle_noise, xinit=xinit, yinit=yinit, rinit=3, targetx=targetx, targety=targety)
         self.auv = AUV(self.world, xinit, yinit)
         self.viz = None
         self.viz = Visualizer(self.world, C.SCREEN_WIDTH,
