@@ -148,7 +148,6 @@ class Environment:
         thrust_angle *= self.auv._thruster_limit
         thrust_power *= self.auv._thruster_power_limit
 
-
         # set AUV thrust angle
         self.auv.set_thrust_angle(thrust_angle)
         # set AUV thrust level
@@ -156,7 +155,7 @@ class Environment:
 
         self.auv.update(C.TIME_STEP)
         self.world.update(C.TIME_STEP)
-        self.clock.tick(C.TARGET_FPS)
+        #self.clock.tick(C.TARGET_FPS)
 
         obs = self._observe()
         reward = self._reward(obs, action)
