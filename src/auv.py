@@ -19,7 +19,7 @@ class AUV:
                  y=10,
                  l=3,
                  h=1,
-                 thruster_size=0.5,
+                 thruster_size=0.3,
                  thruster_limit=50,
                  ray_length=10,
                  thruster_power_limit=50):
@@ -51,14 +51,14 @@ class AUV:
             position=(x, y),
             angle=0.,
             linearDamping=0.2,
-            angularDamping=0.2,
+            angularDamping=0.6,
             fixtures=b2.b2FixtureDef(
                 shape=b2.b2PolygonShape(vertices=auv_vertices),
                 density=10,
                 # slidey
                 friction=0.9,
                 # not very bouncy
-                restitution=0.7))
+                restitution=0.01))
 
         # where the thruster is attached to the auv
         thruster_local_anchor_auv = (0, 0)
@@ -87,7 +87,7 @@ class AUV:
             localAnchorB=thruster_local_anchor_auv,
             enableMotor=True,
             enableLimit=True,
-            maxMotorTorque=10)
+            maxMotorTorque=50)
 
         # dont let the thruster collide with the auv body
         thruster_joint.collideConnected = False
