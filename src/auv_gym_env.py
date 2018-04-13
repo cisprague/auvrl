@@ -60,6 +60,8 @@ class Environment:
         self.clock = pg.time.Clock()
 
         self.target_point = [targetx, targety]
+        self.collided = False
+        self.landed = False
 
         return self._observe()
 
@@ -114,9 +116,14 @@ class Environment:
         # extract actions
         thrust_angle, thrust_power = action
         # normalise thruster power
-        thrust_power /= 50
         # negatively reward using thruster (optimal control)
         r -= thrust_power**2
+
+        if self.collided == True:
+            r -= 1
+
+        if self.landed == True:
+            r += 1
 
         # return overall reward
         return r
@@ -127,10 +134,12 @@ class Environment:
         if math.fabs(pos[0] - self.target_point[0]) < C.TARGET_AREA and\
            math.fabs(pos[1] - self.target_point[1]) < C.TARGET_HEIGHT:
             done = True
+            self.landed = True
 
         colls = self.auv.get_collisions()
         if colls is not None and len(colls) > 1:
             done = True
+            self.collided = True
 
         return done
 
@@ -162,13 +171,14 @@ class Environment:
         #self.clock.tick(C.TARGET_FPS)
 
         obs = self._observe()
-        reward = self._reward(obs, action)
         done = self._done()
+        reward = self._reward(obs, action)
         info = {}
 
         return obs, reward, done, info
 
     def render(self):
+        self.clock.tick(C.TARGET_FPS)
         self.auv.get_proximity()
         self.viz.update(points=self.auv.last_casted_points,
                         points_connection=self.auv.get_position())
@@ -187,7 +197,7 @@ def make_environment(env_type, world_size, gravity, randomx, randomy):
         obstacle_sizes = 12
         obstacle_noise = 5
     if env_type=='manysmall':
-        num_obstacles = 13
+        num_obstacles = 18
         obstacle_sizes = 2
         obstacle_noise = 2
 

@@ -263,24 +263,26 @@ def train(sess, env, args, actor, critic, actor_noise):
     # in other environments.
     # tflearn.is_training(True)
 
+    current_step = 0
+
     for i in range(int(args['max_episodes'])):
-        print("i",i)
+        #print("i",i)
         s_temp = env.reset()
         s = s_temp[0:3]
         for tem_con in range(0,len(s_temp[3])):
             s = np.append(s,s_temp[3][tem_con][0])
         ep_reward = 0
         ep_ave_max_q = 0
+        current_step += 1
 
         for j in range(int(args['max_episode_len'])):
-            print("j",j)
-            if args['render_env']:
+            #print("j",j)
+            if args['render_env'] and current_step % 10 == 0:
                 env.render()
 
             # Added exploration noise
             #a = actor.predict(np.reshape(s, (1, 3))) + (1. / (1. + i))
             a = actor.predict(np.reshape(s, (1, actor.s_dim))) + actor_noise()
-
 
             s_temp2, r, terminal, info = env.step(a[0])
             s2 = s_temp2[0:3]
@@ -339,7 +341,7 @@ def train(sess, env, args, actor, critic, actor_noise):
 def main(args):
     with tf.Session() as sess:
 
-        myenv = auv_gym_env.make_environment('fewlarge',50,-1,5,5)
+        myenv = auv_gym_env.make_environment('empty', 50, -.1, 5, 5)
         myenv.render()
         #print (len(myenv._observe()))
         #env = gym.make(args['env'])

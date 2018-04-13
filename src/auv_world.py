@@ -69,7 +69,6 @@ class World:
                 if d > rinit + r:
                     pass
                 else:
-                    print("Obstacle conflicts with initialisation.")
                     continue
 
                 # Euclidian distance to target position
@@ -79,7 +78,6 @@ class World:
                 if d > r + C.TARGET_AREA:
                     break
                 else:
-                    print("Obstacle conflicts with target.")
                     continue
 
             pos = [x, y]
