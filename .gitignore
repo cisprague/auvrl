@@ -1,4 +1,5 @@
 __pycache__/
 *.pyc
-.ipynb_checkpoints/
+*.ipynb_checkpoints/
 *.1
+src/results/
