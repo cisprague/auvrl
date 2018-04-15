@@ -43,6 +43,9 @@ class Environment:
                      xinit, yinit,\
                      targetx, targety,\
                      randomx, randomy]
+        self.state_dim = 12
+        self.action_dim = 2
+        self.action_bound = [1, 1]
         self.reset()
 
     def reset(self):
@@ -66,12 +69,12 @@ class Environment:
         return self._observe()
 
     def _observe(self):
-        pos = self.auv.get_position()
-        dist = G.euclid_distance(pos, self.target_point)
+        pos     = self.auv.get_position()
+        dist    = G.euclid_distance(pos, self.target_point)
         heading = self.auv.get_heading()
-        angle = G.directed_angle([1, 0], pos)
-        prox = self.auv.get_proximity()
-        angvel = self.auv.get_angular_velocity()
+        angle   = G.directed_angle([1, 0], pos)
+        prox    = self.auv.get_proximity()
+        angvel  = self.auv.get_angular_velocity()
 
         return dist, heading, angle, angvel, prox
 
@@ -87,7 +90,7 @@ class Environment:
         # normalised distance to target
         d /= D
         # reward being closer to target
-        #r += 1 / math.exp(d)
+        r += 1 / math.exp(d)
 
         # ray observations
         rays = obs[-1]
@@ -116,11 +119,9 @@ class Environment:
 
         # angular velocity
         w = obs[3]
-        r += 1/math.exp(w)
-
+        r -= 1/math.exp(math.fabs(w))
         # extract actions
         thrust_angle, thrust_power = action
-        # normalise thruster power
         # negatively reward using thruster (optimal control)
         r -= thrust_power**2
 
@@ -136,8 +137,12 @@ class Environment:
     def _done(self):
         done = False
         pos = self.auv.get_position()
-        if math.fabs(pos[0] - self.target_point[0]) < C.TARGET_AREA and\
-           math.fabs(pos[1] - self.target_point[1]) < C.TARGET_HEIGHT:
+        vel = self.auv.get_velocity()
+        angvel = self.auv.get_angular_velocity()
+        if math.fabs(pos[0] - self.target_point[0]) < C.TARGET_AREA and \
+           math.fabs(pos[1] - self.target_point[1]) < C.TARGET_HEIGHT and \
+           math.sqrt(vel[0]**2 + vel[1]**2) < 0.2 and \
+           angvel < 0.1:
             done = True
             self.landed = True
 
@@ -202,7 +207,7 @@ def make_environment(env_type, world_size, gravity, randomx, randomy):
         obstacle_sizes = 12
         obstacle_noise = 5
     if env_type=='manysmall':
-        num_obstacles = 18
+        num_obstacles = 30
         obstacle_sizes = 2
         obstacle_noise = 2
 
