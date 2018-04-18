@@ -265,6 +265,9 @@ def train(sess, env, args, actor, critic, actor_noise):
 
     current_step = 0
 
+    rewards = list()
+    qvals = list()
+
     for i in range(int(args['max_episodes'])):
         #print("i",i)
         s_temp = env.reset()
@@ -336,7 +339,11 @@ def train(sess, env, args, actor, critic, actor_noise):
                 writer.flush()
                 print('| Reward: {:d} | Episode: {:d} | Qmax: {:.4f}'.format(int(ep_reward), \
                         i, (ep_ave_max_q / float(j))))
+
+                rewards.append(ep_reward)
+                qvals.append(ep_ave_max_q / float(j))
                 break
+    return rewards, qvals
 
 def main(args):
     with tf.Session() as sess:

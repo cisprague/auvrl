@@ -119,7 +119,7 @@ class Environment:
 
         # angular velocity
         w = obs[3]
-        r -= 1/math.exp(math.fabs(w))
+        r -= w**2
         # extract actions
         thrust_angle, thrust_power = action
         # negatively reward using thruster (optimal control)
@@ -207,7 +207,7 @@ def make_environment(env_type, world_size, gravity, randomx, randomy):
         obstacle_sizes = 12
         obstacle_noise = 5
     if env_type=='manysmall':
-        num_obstacles = 30
+        num_obstacles = 20
         obstacle_sizes = 2
         obstacle_noise = 2
 
