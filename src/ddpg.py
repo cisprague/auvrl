@@ -10,6 +10,9 @@ import auv_gym_env
 
 from replay_buffer import ReplayBuffer
 
+import os
+
+
 # ===========================
 #   Actor and Critic DNNs
 # ===========================
@@ -243,7 +246,11 @@ def build_summaries():
 #   Agent Training
 # ===========================
 
-def train(sess, env, args, actor, critic, actor_noise):
+def train(sess, env, args, actor, critic, actor_noise, renf=10):
+
+    fp = os.path.realpath(__file__)
+    fp = os.path.split(fp)[0]
+    fn = fp + "/results/data/" + env.name + "_"
 
     # Set up summary Ops
     summary_ops, summary_vars = build_summaries()
@@ -267,6 +274,10 @@ def train(sess, env, args, actor, critic, actor_noise):
 
     rewards = list()
     qvals = list()
+    traj = list()
+
+    # record actions frequency
+    nreca = int(int(args['max_episodes'])/10.)
 
     for i in range(int(args['max_episodes'])):
         #print("i",i)
@@ -278,14 +289,19 @@ def train(sess, env, args, actor, critic, actor_noise):
         ep_ave_max_q = 0
         current_step += 1
 
+        stateactions = np.empty(shape=(0, 15))
+
         for j in range(int(args['max_episode_len'])):
             #print("j",j)
-            if args['render_env'] and current_step % 10 == 0:
+            if args['render_env'] and current_step % renf == 0:
                 env.render()
 
             # Added exploration noise
             #a = actor.predict(np.reshape(s, (1, 3))) + (1. / (1. + i))
-            a = actor.predict(np.reshape(s, (1, actor.s_dim))) + actor_noise()
+            a = actor.predict(np.reshape(s, (1, actor.s_dim)))
+            if current_step % nreca == 0:
+                stateactions = np.vstack((stateactions, np.hstack((s, a[0], env.time))))
+            a += actor_noise()
 
             s_temp2, r, terminal, info = env.step(a[0])
             s2 = s_temp2[0:4]
@@ -341,9 +357,13 @@ def train(sess, env, args, actor, critic, actor_noise):
                         i, (ep_ave_max_q / float(j))))
 
                 rewards.append(ep_reward)
+                np.save(fn + "rewards", rewards)
                 qvals.append(ep_ave_max_q / float(j))
+                np.save(fn + "qvals", qvals)
+                if current_step % nreca == 0:
+                    traj.append(stateactions)
+                    np.save(fn + "traj", traj)
                 break
-    return rewards, qvals
 
 def main(args):
     with tf.Session() as sess:

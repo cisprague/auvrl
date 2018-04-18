@@ -36,6 +36,7 @@ class World:
         a = 1
         box_vertices = [(a, a), (world_size - a, a),
                         (world_size - a, world_size - a), (a, world_size - a)]
+        self.time = 0
 
         # a static body. A body is just a point with no shape
         self._box = self.world.CreateStaticBody(
@@ -86,6 +87,7 @@ class World:
 
     def update(self, dt=1 / 60):
         self.world.Step(dt, 10, 10)
+
 
 
 def _make_random_obstacle(pos, size=5, size_range=2, num_verts=10):

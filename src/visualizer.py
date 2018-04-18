@@ -6,6 +6,7 @@
 # Date: 2018-03-14
 
 import pygame as pg
+import os
 
 
 class Visualizer:
@@ -13,7 +14,8 @@ class Visualizer:
                  world,
                  w=640,
                  h=480,
-                 ppm=20):
+                 ppm=20,
+                 name="Generic"):
 
         self._ppm = ppm
         self._w = w
@@ -21,6 +23,11 @@ class Visualizer:
 
         self._screen = pg.display.set_mode((w, h), 0, 32)
         self._world = world.world
+
+        fp = os.path.realpath(__file__)
+        fp = os.path.split(fp)[0]
+        self.fp = fp + "/results/img/" + name + "_"
+        self.num = 0
 
     def update(self, points=None, points_connection=None):
         # refresh
@@ -61,6 +68,8 @@ class Visualizer:
                                    (int(pt[0]), int(pt[1])), 2)
                 else:
                     pg.draw.lines(self._screen, (0, 255, 0, 0), True, [pc, pt])
+        pg.image.save(self._screen, self.fp + "img_" + str(self.num) + ".jpg")
+        self.num += 1
 
         # update screen
         pg.display.flip()

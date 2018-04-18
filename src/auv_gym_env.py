@@ -25,7 +25,7 @@ class Environment:
                  world_size, gravity, num_obstacles, obstacle_sizes, obstacle_noise,
                  xinit, yinit,
                  targetx, targety,
-                 randomx=0, randomy=0):
+                 randomx=0, randomy=0, env_name="Generic"):
         """
         world size in meters, origin at bottom left
         gravity in N/m tuple (x, y)
@@ -46,6 +46,7 @@ class Environment:
         self.state_dim = 12
         self.action_dim = 2
         self.action_bound = [1, 1]
+        self.name = env_name
         self.reset()
 
     def reset(self):
@@ -58,9 +59,10 @@ class Environment:
         self.auv = AUV(self.world, xinit, yinit)
         self.viz = None
         self.viz = Visualizer(self.world, C.SCREEN_WIDTH,
-                              C.SCREEN_HEIGHT, C.PPM)
+                              C.SCREEN_HEIGHT, C.PPM, name=self.name)
         self.cont = Controller(self.auv)
         self.clock = pg.time.Clock()
+        self.time = 0
 
         self.target_point = [targetx, targety]
         self.collided = False
@@ -82,21 +84,24 @@ class Environment:
 
         # initialise reward
         r = 0
+        # time penalty
+        r -= 1
+
         # world size
         D = self.args[0]
-
         # distance to target
         d = obs[0]
         # normalised distance to target
-        d /= D
+        #d /= D
         # reward being closer to target
-        r += 1 / math.exp(d)
+        r += 1 / d
 
         # ray observations
         rays = obs[-1]
         # number of rays
         nrays = len(rays)
         # initialise ray reward
+        '''
         rr = 0
         # for each sensor array
         for ray in rays:
@@ -116,6 +121,7 @@ class Environment:
         rr /= nrays
         # add ray awards to overall rewards
         #r += rr
+        '''
 
         # angular velocity
         w = obs[3]
@@ -126,10 +132,10 @@ class Environment:
         r -= thrust_power**2
 
         if self.collided == True:
-            r -= 10
+            r -= 100
 
         if self.landed == True:
-            r += 10
+            r += 100
 
         # return overall reward
         return r
@@ -153,7 +159,7 @@ class Environment:
 
         return done
 
-    def step(self, action, dt=0.1):
+    def step(self, action, dt=None):
         """
         action is a tuple of 'thrust angle' and 'thrust power'
         thrust angle and power commands are both between -1 and 1.
@@ -175,9 +181,11 @@ class Environment:
         if dt is not None:
             self.auv.update(dt)
             self.world.update(dt)
+            self.time += dt
         else:
             self.auv.update(C.TIME_STEP)
             self.world.update(C.TIME_STEP)
+            self.time += C.TIME_STEP
         #self.clock.tick(C.TARGET_FPS)
 
         obs = self._observe()
@@ -212,9 +220,9 @@ def make_environment(env_type, world_size, gravity, randomx, randomy):
         obstacle_noise = 2
 
     env = Environment(world_size,gravity,num_obstacles,obstacle_sizes,obstacle_noise,
-                      10,world_size-10,
-                      world_size/2,0,
-                      randomx,randomy)
+    10,world_size-10,
+    world_size/2,0,
+    randomx,randomy, env_type)
     return env
 
 if __name__=='__main__':
