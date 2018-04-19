@@ -57,9 +57,15 @@ class Environment:
 
         self.world = World(world_size, gravity, num_obstacles, obstacle_sizes, obstacle_noise, xinit=xinit, yinit=yinit, rinit=3, targetx=targetx, targety=targety)
         self.auv = AUV(self.world, xinit, yinit)
+        if hasattr(self, "viz"):
+            num = self.viz.num
+        else:
+            num = 0
         self.viz = None
         self.viz = Visualizer(self.world, C.SCREEN_WIDTH,
                               C.SCREEN_HEIGHT, C.PPM, name=self.name)
+
+        self.viz.num = num
         self.cont = Controller(self.auv)
         self.clock = pg.time.Clock()
         self.time = 0

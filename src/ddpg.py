@@ -353,7 +353,7 @@ def train(sess, env, args, actor, critic, actor_noise, renf=10):
 
                 writer.add_summary(summary_str, i)
                 writer.flush()
-                print('| Reward: {:d} | Episode: {:d} | Qmax: {:.4f}'.format(int(ep_reward), \
+                print(env.name + ' | Reward: {:d} | Episode: {:d} | Qmax: {:.4f}'.format(int(ep_reward), \
                         i, (ep_ave_max_q / float(j))))
 
                 rewards.append(ep_reward)
