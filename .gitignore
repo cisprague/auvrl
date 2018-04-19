@@ -5,3 +5,4 @@ __pycache__/
 src/results/tf_ddpg/*
 src/results/data/*
 src/results/img/*
+notebooks/results/
