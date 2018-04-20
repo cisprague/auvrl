@@ -1,0 +1,6 @@
+model_checkpoint_path: "main_sess120"
+all_model_checkpoint_paths: "critic_sess110"
+all_model_checkpoint_paths: "main_sess110"
+all_model_checkpoint_paths: "actor_sess120"
+all_model_checkpoint_paths: "critic_sess120"
+all_model_checkpoint_paths: "main_sess120"

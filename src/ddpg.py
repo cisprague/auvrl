@@ -11,7 +11,7 @@ import auv_gym_env
 from replay_buffer import ReplayBuffer
 
 import os
-
+import pickle
 
 # ===========================
 #   Actor and Critic DNNs
@@ -25,7 +25,12 @@ class ActorNetwork(object):
     The output layer activation is a tanh to keep the action
     between -action_bound and action_bound
     """
+    def save(self,saver,model_num):
+        saver.save(self.sess, "./model/actor_sess"+model_num)
 
+    def restore(self,saver,model_num):
+         saver.restore(self.sess, "./model/actor_sess"+model_num)
+            
     def __init__(self, sess, state_dim, action_dim, action_bound, learning_rate, tau, batch_size):
         self.sess = sess
         self.s_dim = state_dim
@@ -114,6 +119,11 @@ class CriticNetwork(object):
     The action must be obtained from the output of the Actor network.
 
     """
+    def save(self,saver,model_num):
+        saver.save(self.sess, "./model/critic_sess"+model_num)
+        
+    def restore(self,saver,model_num):
+        saver.restore(self.sess, "./model/critic_sess"+model_num)
 
     def __init__(self, sess, state_dim, action_dim, learning_rate, tau, gamma, num_actor_vars):
         self.sess = sess
@@ -246,8 +256,12 @@ def build_summaries():
 #   Agent Training
 # ===========================
 
-def train(sess, env, args, actor, critic, actor_noise, renf=10):
+def save_object(obj, filename):
+    with open(filename, 'wb') as output:  # Overwrites any existing file.
+        pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
 
+def train(sess, env, args, actor, critic, actor_noise, renf=10):
+    saver = tf.train.Saver()
     fp = os.path.realpath(__file__)
     fp = os.path.split(fp)[0]
     fn = fp + "/results/data/" + env.name + "_"
@@ -281,6 +295,18 @@ def train(sess, env, args, actor, critic, actor_noise, renf=10):
 
     for i in range(int(args['max_episodes'])):
         #print("i",i)
+        if i % 10 == 0 and args['load_model'] == '':
+            actor.save(saver,str(i))
+            critic.save(saver,str(i))
+            save_object(actor_noise, "model/actor_noise"+str(i))
+            saver.save(sess, "./model/main_sess"+str(i))
+            print('Saved model in iteration: '+str(i))
+        elif i == 0:
+            actor.restore(saver,args['load_model'])
+            critic.restore(saver,args['load_model'])
+            saver.restore(sess, "./model/main_sess"+args['load_model'])
+            actor_noise = pickle.load(open("model/actor_noise"+args['load_model'], 'rb'))
+            print('Model restored')
         s_temp = env.reset()
         s = s_temp[0:4]
         for tem_con in range(0,len(s_temp[4])):
@@ -365,6 +391,9 @@ def train(sess, env, args, actor, critic, actor_noise, renf=10):
                     np.save(fn + "traj", traj)
                 break
 
+            
+     
+
 def main(args):
     with tf.Session() as sess:
 
@@ -389,7 +418,7 @@ def main(args):
         #print(env.action_space.low)
         # Ensure action bound is symmetric
         #assert (env.action_space.high.all() == (-env.action_space.low).all())
-
+        
         actor = ActorNetwork(sess, state_dim, action_dim, action_bound,
                              float(args['actor_lr']), float(args['tau']),
                              int(args['minibatch_size']))
@@ -418,6 +447,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='provide arguments for DDPG agent')
 
     # agent parameters
+    parser.add_argument('--load-model', help='actor network learning rate', default='')
     parser.add_argument('--actor-lr', help='actor network learning rate', default=0.0001)
     parser.add_argument('--critic-lr', help='critic network learning rate', default=0.001)
     parser.add_argument('--gamma', help='discount factor for critic updates', default=0.99)
