@@ -25,7 +25,7 @@ class Environment:
                  world_size, gravity, num_obstacles, obstacle_sizes, obstacle_noise,
                  xinit, yinit,
                  targetx, targety,
-                 randomx=0, randomy=0, env_name="Generic"):
+                 randomx, randomy, env_name):
         """
         world size in meters, origin at bottom left
         gravity in N/m tuple (x, y)
@@ -91,23 +91,23 @@ class Environment:
         # initialise reward
         r = 0
         # time penalty
-        r -= 1
+        #r -= 1
 
         # world size
         D = self.args[0]
         # distance to target
         d = obs[0]
         # normalised distance to target
-        #d /= D
+        d /= D
         # reward being closer to target
-        r += 1 / d
+        r += 1 - max(min(abs(d), 1.0), 0.0)
+
 
         # ray observations
         rays = obs[-1]
         # number of rays
         nrays = len(rays)
         # initialise ray reward
-        '''
         rr = 0
         # for each sensor array
         for ray in rays:
@@ -116,32 +116,30 @@ class Environment:
             # if ray doesn't sense anything
             if d == -1:
                 # positive reward, because no obstacles are sensed
-                rr += 1
+                pass
             # if ray does sense something
             else:
-                # normalised distance to obstacle
-                d /= D
                 # negatively reward getting closer to obstacle
-                rr -= 1 / math.exp(d)
+                rr += max(min(abs(d), 1.0), 0.0) - 1
         # average ray rewards
         rr /= nrays
         # add ray awards to overall rewards
-        #r += rr
-        '''
+        r += rr
+
 
         # angular velocity
         w = obs[3]
-        r -= w**2
+        r += - max(min(abs(w), 1.0), 0.0)
         # extract actions
         thrust_angle, thrust_power = action
         # negatively reward using thruster (optimal control)
-        r -= thrust_power**2
+        r -= max(min(abs(thrust_power), 1.0), 0.0)
 
         if self.collided == True:
             r -= 100
 
         if self.landed == True:
-            r += 100
+            r += 1000
 
         # return overall reward
         return r
@@ -152,25 +150,23 @@ class Environment:
         vel = self.auv.get_velocity()
         angvel = self.auv.get_angular_velocity()
         if math.fabs(pos[0] - self.target_point[0]) < C.TARGET_AREA and \
-           math.fabs(pos[1] - self.target_point[1]) < C.TARGET_HEIGHT and \
-           math.sqrt(vel[0]**2 + vel[1]**2) < 0.2 and \
-           angvel < 0.1:
+           math.fabs(pos[1] - self.target_point[1]) < C.TARGET_HEIGHT:
             done = True
             self.landed = True
+            return done
 
         colls = self.auv.get_collisions()
-        if colls is not None and len(colls) > 1:
+        if len(colls) != 0:
             done = True
             self.collided = True
+            return done
 
-        return done
-
-    def step(self, action, dt=None):
+    def step(self, action, dt=0.1):
         """
         action is a tuple of 'thrust angle' and 'thrust power'
         thrust angle and power commands are both between -1 and 1.
         """
-
+        
         # extract thrust angle and power [-1, 1]
         thrust_angle, thrust_power = action
         # transform thrust power into [0, 1]

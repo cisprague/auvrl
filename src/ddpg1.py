@@ -26,10 +26,10 @@ class ActorNetwork(object):
     between -action_bound and action_bound
     """
     def save(self,saver,model_num, env):
-        saver.save(self.sess, "./model/actor_sess" + str(env.name) + model_num)
+        saver.save(self.sess, "./model/" + str(env.name) + "_actor_sess" + model_num)
 
     def restore(self,saver,model_num, env):
-         saver.restore(self.sess, "./model/actor_sess" + str(env.name) + model_num)
+         saver.restore(self.sess, "./model/" + str(env.name) + "_actor_sess"+model_num)
 
     def __init__(self, sess, state_dim, action_dim, action_bound, learning_rate, tau, batch_size):
         self.sess = sess
@@ -120,10 +120,10 @@ class CriticNetwork(object):
 
     """
     def save(self,saver,model_num, env):
-        saver.save(self.sess, "./model/critic_sess" + str(env.name) + model_num)
+        saver.save(self.sess, "./model/" + str(env.name) + "_critic_sess" + model_num)
 
     def restore(self,saver,model_num, env):
-        saver.restore(self.sess, "./model/critic_sess" + str(env.name) + model_num)
+        saver.restore(self.sess, "./model/" + str(env.name) + "_critic_sess" + model_num)
 
     def __init__(self, sess, state_dim, action_dim, learning_rate, tau, gamma, num_actor_vars):
         self.sess = sess
@@ -295,17 +295,17 @@ def train(sess, env, args, actor, critic, actor_noise, renf=10):
 
     for i in range(int(args['max_episodes'])):
         #print("i",i)
-        if i % renf == 0 and args['load_model'] == '':
+        if i % 2 == 0 and args['load_model'] == '':
             actor.save(saver,str(i), env)
             critic.save(saver,str(i), env)
-            save_object(actor_noise, "model/actor_noise" + str(env.name) + str(i))
-            saver.save(sess, "./model/main_sess" + str(env.name) + str(i))
-            print('Saved model in iteration: '+ str(i))
+            save_object(actor_noise, "model/" + str(env.name) + "_actor_noise" + str(i))
+            saver.save(sess, "./model/" + str(env.name) + "_main_sess" + str(i))
+            print('Saved model in iteration: '+str(i))
         elif i == 0:
             actor.restore(saver,args['load_model'], env)
             critic.restore(saver,args['load_model'], env)
-            saver.restore(sess, "./model/main_sess" + str(env.name) + args['load_model'])
-            actor_noise = pickle.load(open("model/actor_noise" + str(env.name) + args['load_model'], 'rb'))
+            saver.restore(sess, "./model/" + str(env.name) + "_main_sess" + args['load_model'])
+            actor_noise = pickle.load(open("model/" + str(env.name) + "_actor_noise"+args['load_model'], 'rb'))
             print('Model restored')
         s_temp = env.reset()
         s = s_temp[0:4]

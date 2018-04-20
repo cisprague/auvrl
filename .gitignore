@@ -6,3 +6,6 @@ src/results/tf_ddpg/*
 src/results/data/*
 src/results/img/*
 notebooks/results/
+results1
+model/*
+notebooks/results

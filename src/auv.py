@@ -20,7 +20,7 @@ class AUV:
                  l=3,
                  h=1,
                  thruster_size=0.3,
-                 thruster_limit=50,
+                 thruster_limit=30,
                  ray_length=10,
                  thruster_power_limit=50):
         """
