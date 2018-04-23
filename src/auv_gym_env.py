@@ -100,9 +100,9 @@ class Environment:
         # normalised distance to target
         d /= D
         # reward being closer to target
-        r += 1 - max(min(abs(d), 1.0), 0.0)
+        r += 1 - abs(d)
 
-
+        '''
         # ray observations
         rays = obs[-1]
         # number of rays
@@ -125,26 +125,23 @@ class Environment:
         rr /= nrays
         # add ray awards to overall rewards
         r += rr
+        '''
 
 
         # angular velocity
         w = obs[3]
-        r += - max(min(abs(w), 1.0), 0.0)
+        r += - abs(w)*0.1
         # extract actions
         thrust_angle, thrust_power = action
         # negatively reward using thruster (optimal control)
-        r -= max(min(abs(thrust_power), 1.0), 0.0)
+        r += - abs(thrust_power)*0.1
 
-        if self.collided == True:
-            r -= 100
 
-        if self.landed == True:
-            r += 1000
 
         # return overall reward
         return r
 
-    def _done(self):
+    def _done(self, r):
         done = False
         pos = self.auv.get_position()
         vel = self.auv.get_velocity()
@@ -152,21 +149,23 @@ class Environment:
         if math.fabs(pos[0] - self.target_point[0]) < C.TARGET_AREA and \
            math.fabs(pos[1] - self.target_point[1]) < C.TARGET_HEIGHT:
             done = True
-            self.landed = True
-            return done
+            r += 1000
+            return done, r
 
         colls = self.auv.get_collisions()
         if len(colls) != 0:
             done = True
-            self.collided = True
-            return done
+            r -= 100
+            return done, r
+
+        return done, r
 
     def step(self, action, dt=0.1):
         """
         action is a tuple of 'thrust angle' and 'thrust power'
         thrust angle and power commands are both between -1 and 1.
         """
-        
+
         # extract thrust angle and power [-1, 1]
         thrust_angle, thrust_power = action
         # transform thrust power into [0, 1]
@@ -191,8 +190,8 @@ class Environment:
         #self.clock.tick(C.TARGET_FPS)
 
         obs = self._observe()
-        done = self._done()
         reward = self._reward(obs, action)
+        done, reward = self._done(reward)
         info = {}
 
         return obs, reward, done, info
