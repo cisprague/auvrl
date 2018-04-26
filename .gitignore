@@ -17,4 +17,9 @@ src/results/*
 src/model/*
 src/model2/*
 src/results2/*
+src/results3/*
+src/results4/*
+src/results0/*
 notebooks/model*
+*.webm
+*.mp4
